@@ -13,11 +13,16 @@ a 404 page. Extend it; don't rebuild it.
 Placeholders written as double braces around an UPPER_CASE name are filled in by the platform.
 The filled-in copy, which wins over this file when they differ, is what the editor
 gives you (`/etc/claude-code/CLAUDE.md`, `{{DOCS_DIR}}/`); outside the editor,
-`npm run platform -- docs` saves it to `.platform/docs/` (start with `core.md`).
+`npm run platform -- docs --site <a hosted site's address>` saves it to `.platform/docs/` (start with `core.md`).
+**A placeholder still in double braces is not filled in** (on a developer's own computer, or any copy
+outside the editor): never fetch, open or paste it as a URL, path or value, and never fill it in (this file
+is compared byte for byte). Read `docs/agent/<topic>.md` in this folder instead of `{{DOCS_DIR}}` or
+`{{DOCS_URL}}`; for any other one, `DEVELOPERS.md` or `STORE-LISTING.md`, if present, says what it is on
+that computer; otherwise it isn't available there: do the task without it and say so in one line.
 
-## First: is this site on the required template version? (0.7.13)
-Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.13, upgrade it
-now, as your first step, without asking.** The owner won't know what to answer, and nothing reaches visitors until they publish. Say one
+## First: is this site on the required template version? (0.7.15)
+Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.15 (below it, `npm run platform -- check`
+puts a half-done merge back with the wrong file, and on a developer's computer its AI can open a placeholder as a link; below 0.7.14 it can't tell when the template's own files were changed), upgrade it now, as your first step, without asking.** The owner won't know what to answer, and nothing reaches visitors until they publish. Say one
 plain line, such as "I'm updating your site first. Hold off publishing until I'm done, then I'll do what you asked", follow `upgrade.md`, then do
 their task. A question from the owner that changes nothing can be answered first. Upgrade before anything that changes a file. No
 `template.json` means this site wasn't built from a template: skip this. A `.review/REVIEW.md` means this is a read-only review copy: never upgrade it. If `.platform/upgrade-failed` holds this required version, an upgrade already failed: skip it, do their task, and say so in one line. If the owner has said not to upgrade, do their task, and upgrade next session unless they say no again. If it can't finish,
@@ -26,11 +31,16 @@ their task. A question from the owner that changes nothing can be answered first
 
 **On a developer's own computer.** If `DEVELOPERS.md` exists at the top of this project, read it first: it says how this
 copy is set up and kept up to date. If `git remote -v` lists `upstream` (the template repository it was cloned from), an
-upgrade is a merge, not `upgrade.md` step 1: commit everything, `git fetch upstream --tags`, `git merge v<version>` (the
-newest `v*` tag, at least the required version), solve conflicts (`package-lock.json`: take either side, then `npm install`;
+upgrade is a merge, not `upgrade.md` step 1: commit everything, `git fetch upstream --tags`, then
+`git merge "$(git describe --tags --abbrev=0 upstream/main)"` (the newest release, at least the required version), solve conflicts (`package-lock.json`: `git checkout --theirs package-lock.json`, then `npm install`;
 the template's managed files and `AGENTS.md`: take the template's), then follow `upgrade.md` from step 2 and check it. A
-copy with no shared history merges once with `--allow-unrelated-histories`. No `upstream` and no editor: `upgrade.md` step 1
-with `--from` a newer template the developer downloaded.
+copy with no shared history merges once with `--allow-unrelated-histories`. No `upstream` and no editor: add the template's
+repository as `upstream` (`DEVELOPERS.md` names it) and merge; there is no copy to download. Never edit the template's own
+files: `docs/agent/`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `template.json`, `CHANGELOG.md`, `scripts/platform.mjs`,
+`scripts/managed-files.json`. They are compared byte for byte with the release `template.json` names, and a store
+submission that changed or deleted one is refused; put one back with `git checkout v<the version in template.json> -- <file>`.
+`npm run platform -- check` compares them. Before saying a store listing is ready: `DEVELOPERS.md` "For your AI".
+
 ## Every task: the current rules first, then the owner's words
 These rules are kept up to date by the platform and can be newer than this site's code, which stays
 as it was built. The owner is not an engineer: they say WHAT they want; HOW is yours, by these rules.

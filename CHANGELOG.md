@@ -4,6 +4,27 @@ Template releases. `npm run platform -- check` says when a newer one is out;
 `npm run platform -- upgrade` applies it (see `scripts/platform.mjs`).
 Managed by the template: replaced on upgrade.
 
+## 0.7.15
+
+- **Required upgrade.** Clearer steps on a developer's own computer. `scripts/platform.mjs`: `check` on a `template.json` left on
+  another version than the rest says to finish the merge, or to put back only `template.json` from the release the other files are on.
+- `AGENTS.md`, `README.md`, `docs/agent/upgrade.md`: the merge command names no version
+  (`git merge "$(git describe --tags --abbrev=0 upstream/main)"` takes the newest release); one command per line, so they also run in
+  Windows PowerShell; a `package-lock.json` conflict: `git checkout --theirs package-lock.json`, then `npm install`; the template's own
+  files keep no changes of yours (describe your project in `README.md`).
+- `AGENTS.md`: a placeholder still in double braces is not filled in (a copy outside the editor): never open it as a URL or path;
+  read `docs/agent/` in the project instead. `npm run platform -- docs` names its `--site`.
+- Steps for an existing site: `docs/agent/upgrade.md` step 5.
+
+## 0.7.14
+
+- **Required upgrade.** The template's own files are checked: `scripts/managed-files.json` lists them (`docs/agent/`, `AGENTS.md`,
+  `CLAUDE.md`, `GEMINI.md`, `template.json`, `CHANGELOG.md`, `scripts/platform.mjs`) with their sha256, and
+  `npm run platform -- check` compares them byte for byte and says how to put one back (`git checkout v<version> -- <file>`); on a
+  clone of the template's repository it reads the `upstream` remote's release tags. Exit 1 when something is to fix.
+- `.gitattributes`: every text file is LF, also on a Windows checkout.
+- `AGENTS.md`, `README.md` and `docs/agent/upgrade.md`: the template's own files listed, releases by `git merge` only (no download).
+
 ## 0.7.13
 
 - **Required upgrade.** `npm run platform -- check` / `upgrade` on a copy you downloaded say how to upgrade it (`--from` an unzipped

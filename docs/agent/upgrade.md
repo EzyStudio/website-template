@@ -14,7 +14,7 @@ Start with a clean git tree: commit what's there. Never stash: Publish ships the
    npm run platform -- upgrade --from /tmp/site-template
    ```
    If its `template.json` is still below the required version, or the file never arrives, treat it as "If it can't finish" below. Never ask the owner to download or find anything: they have nowhere to get it. Plain `npm run platform -- upgrade` fails with `no template folder`: always pass `--from`.
-   A developer on their own machine with an `upstream` remote (the template repository it was cloned from): merge the release tag instead (`AGENTS.md` "On a developer's own computer"), then continue at step 2. Otherwise: download the newest template (or developer kit) again, unzip it OUTSIDE the project, and use `--from <that folder>` the same way (`npm run platform -- check --from <that folder>` first says whether it is newer). Files that came with the download and not the template (its `.gitignore` names them) are never copied in.
+   A developer on their own machine (a clone of the template's repository, its `upstream` remote): merge the newest release tag instead (`AGENTS.md` "On a developer's own computer"), then continue at step 2. No `upstream` remote: add the template's repository as `upstream` (`DEVELOPERS.md` names it) and merge; there is no copy to download. `npm run platform -- check` says whether a newer release is out.
 2. It replaces the managed files, adds new ones, and lists what it left as it was. Go through that list, compare each file with
    `/tmp/site-template/`, and bring over what the template added. Keep this site's own words, pages and look. Often on that list, so
    skip what's already there:
@@ -26,8 +26,19 @@ Start with a clean git tree: commit what's there. Never stash: Publish ships the
    - `package.json` → `scripts` (0.7.13): add the template's `check` line if this site has none. `.nvmrc` and `.editorconfig` arrive as new files: keep them.
    - `README.md` (0.7.13): if this site still has the template's, copy the template's "Building it on your own computer" part (setup, and how to update a copy on your own computer). A site that rewrote it: leave it.
 3. **Check the `added` list.** A page or content file there is one this site deleted or never had. Delete anything added under `src/pages/`, `src/content/`, `src/assets/` or `public/`, unless a step below names it or the build needs it. A visitor must never see a page the owner didn't ask for.
-4. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
-5. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
+4. **Coming from below 0.7.14** (the template's own files are checked). The upgrade adds `scripts/managed-files.json` (this
+   release's list of the template's own files) and `.gitattributes` (LF line endings, also on Windows): keep both. `AGENTS.md`: the
+   upgrade leaves it; copy the template's (`cp /tmp/site-template/AGENTS.md AGENTS.md`) and add this site's own rules back at its
+   end, if it had any. Then `npm run platform -- check --from /tmp/site-template` lists any of the template's own files that still
+   differ (`docs/agent/`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `template.json`, `CHANGELOG.md`, `scripts/`): copy each one from
+   `/tmp/site-template/`. "Windows line endings": `git add --renormalize .`, then check again.
+5. **Coming from below 0.7.15** (clearer steps on a developer's own computer). The upgrade leaves these; skip what's already there:
+   `AGENTS.md`: copy the template's (`cp /tmp/site-template/AGENTS.md AGENTS.md`) and add this site's own rules back at its end, if it
+   had any (an app built for the store keeps it exactly as the template has it; `CLAUDE.md` and `GEMINI.md` are unchanged).
+   `README.md`: if this site still has the template's, copy the template's "Staying up to date" and "Troubleshooting" parts.
+   A site that rewrote it: leave it.
+6. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
+7. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
 
 ## If it can't finish
 Stop before committing, restore with `git checkout .` and `git clean -fd` on what the upgrade added, do the owner's task, and tell them it didn't finish. The site keeps

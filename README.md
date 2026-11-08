@@ -34,7 +34,8 @@ pick the **Astro app** template (the database toggle in the dashboard) instead.
 With [Node.js 22.12+](#requirements):
 
 ```bash
-git clone <the template repository's address> my-site && cd my-site
+git clone <the template repository's address> my-site
+cd my-site
 npm install
 npm run dev                         # http://localhost:4321
 ```
@@ -64,7 +65,7 @@ git push -u origin main
 
 Don't use a "Use this template" button or copy the files: that makes a copy with no shared
 history, and `git merge` can no longer tell your changes from the template's. Already did? See
-[Started from a zip or a copy](#started-from-a-zip-or-a-copy).
+[Started from a copy](#started-from-a-copy).
 
 ## Scripts
 
@@ -74,7 +75,7 @@ history, and `git merge` can no longer tell your changes from the template's. Al
 | `npm run build` | the site into `dist/` (what the platform builds) |
 | `npm run check` | the same build, as the check to run before you push |
 | `npm run preview` | serves the last `npm run build` |
-| `npm run platform -- check` / `upgrade` | template updates from a downloaded copy ([Staying up to date](#without-git-access-to-the-template)) |
+| `npm run platform -- check` | the template's own files untouched, and is a newer release out ([Staying up to date](#staying-up-to-date)) |
 | `npm run platform -- docs --site <a hosted site's address>` | the platform's latest rules for AI agents, into `.platform/docs/` |
 
 ## Project structure
@@ -101,9 +102,14 @@ src/styles/global.css  the stylesheet (inlined into every page)
 - **Your files**: `src/content/site.ts` (every word), `src/content/blog/` (posts), `src/pages/`,
   `src/components/`, `src/layouts/`, `src/styles/`, `src/assets/`, `public/`. `AGENTS.md` and
   `docs/agent/` have the rules: read them, or have your AI read them, before every change.
-- **Never edit** `docs/agent/`, `scripts/platform.mjs`, `CHANGELOG.md` or `template.json`: they are
-  the template's, and releases replace them. Keep `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` as they are.
-- **Before you push**: `npm run check`.
+- **Never edit the template's own files**: `docs/agent/`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+  `template.json`, `CHANGELOG.md`, `scripts/platform.mjs` and `scripts/managed-files.json`. Releases
+  replace them. Each is compared byte for byte with the release `template.json` names:
+  `npm run platform -- check` lists any that changed, and a store listing that changed or deleted one
+  is refused. Put one back with `git checkout v<your version> -- <file>`. `.gitattributes` keeps every
+  text file LF, so a Windows checkout doesn't change them.
+- **Before you push**: `npm run check` and `npm run platform -- check`. If this project has a
+  `DEVELOPERS.md`, follow its "For your AI" steps (and its ready-to-submit checklist) too.
 
 ## Staying up to date
 
@@ -112,8 +118,8 @@ Template releases are tagged `vX.Y.Z` in the template repository you cloned from
 
 ```bash
 git fetch upstream --tags
-git tag -l 'v*' --sort=-v:refname | head -3   # the newest releases
-git merge v0.7.14                             # the one you want
+git describe --tags --abbrev=0 upstream/main   # the newest release
+git merge "$(git describe --tags --abbrev=0 upstream/main)"
 npm install
 npm run check
 ```
@@ -121,16 +127,16 @@ npm run check
 Then follow the new `docs/agent/upgrade.md` for anything that release asks of files you changed.
 
 **Conflicts** (git lists them; search for `<<<<<<<`):
-- `package-lock.json`: take either side (`git checkout --theirs package-lock.json`), run
-  `npm install` (it rebuilds the lock for the merged `package.json`), then commit.
-- The template's own files (`docs/agent/`, `scripts/platform.mjs`, `CHANGELOG.md`, `AGENTS.md`,
-  `CLAUDE.md`, `GEMINI.md`): take the template's (`git checkout --theirs <file>`). Rules of your own
-  in `AGENTS.md`: add them back at the end.
+- `package-lock.json`: `git checkout --theirs package-lock.json`, then `npm install` (it rebuilds the
+  lock for the merged `package.json`), then commit.
+- The template's own files (`docs/agent/`, `scripts/`, `template.json`, `CHANGELOG.md`, `AGENTS.md`,
+  `CLAUDE.md`, `GEMINI.md`): take the template's (`git checkout --theirs <file>`). Never keep changes of
+  your own in them: describe your project in `README.md` instead.
 - Your files (pages, `src/content/site.ts`, styles): keep your words and look, and bring over what
   the template changed.
 - `git merge --abort` puts everything back as it was.
 
-### Started from a zip or a copy
+### Started from a copy
 
 No shared history with the template: connect it once, then merge releases as above.
 
@@ -138,32 +144,18 @@ No shared history with the template: connect it once, then merge releases as abo
 git remote add upstream <the template repository's address>
 git fetch upstream --tags
 git merge v<the version in your template.json> --allow-unrelated-histories   # once
-git merge v0.7.14                                                          # then any newer release
+git merge "$(git describe --tags --abbrev=0 upstream/main)"                # then the newest release
 ```
 
 The first merge lists every file that differs from that release (usually only the ones you
-changed): keep your side of each (`git checkout --ours <file>`), then commit.
-
-### Without git access to the template
-
-With a downloaded zip only: download the newer template, unzip it OUTSIDE this project, commit
-your work, then:
-
-```bash
-npm run platform -- check --from ../astro-static-new      # the folder you unzipped
-npm run platform -- upgrade --from ../astro-static-new    # replaces the managed files, adds new ones
-```
-
-`upgrade` lists the files you changed for you to compare; add `--base <an unzipped copy of the
-version you are on>` for a real 3-way merge. Then `docs/agent/upgrade.md`, `npm install`,
-`npm run check`. Files that came with the download and not the template (its `.gitignore` names
-them) are never copied in.
+changed): keep your side of your own files (`git checkout --ours <file>`) and the template's side
+of its own files (`git checkout --theirs <file>`), then commit.
 
 ## Troubleshooting
 
 | What you see | Why | Fix |
 | --- | --- | --- |
-| `npm install` warns `EBADENGINE`, or Astro refuses to start | Node.js below 22.12 | `nvm install 22 && nvm use` (or install 22.12+), then `npm install` again |
+| `npm install` warns `EBADENGINE`, or Astro refuses to start | Node.js below 22.12 | `nvm install 22`, then `nvm use 22` (or install 22.12+), then `npm install` again |
 | `npm run dev` says port 4321 is in use, or opens another port | another dev server is running | use the address it prints, or stop the other one (`npx astro dev stop`) |
 | http://localhost:4321 shows a different project | another app already listens on 127.0.0.1:4321, so this one only got the IPv6 address (`[::1]:4321`) and your browser reaches the other app | stop the other app, or run this one on a free port: `npx astro dev stop && npx astro dev --port 4322` |
 | `npm run dev` returns to the prompt with "Dev server running at…" | it runs in the background | `npx astro dev logs` shows its output, `npx astro dev stop` stops it |
