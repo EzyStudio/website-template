@@ -4,6 +4,21 @@ Template releases. `npm run platform -- check` says when a newer one is out;
 `npm run platform -- upgrade` applies it (see `scripts/platform.mjs`).
 Managed by the template: replaced on upgrade.
 
+## 0.7.17
+
+- `AGENTS.md`: a static site sells only through the built-in payments; the owner's own Ezypay, Stripe or PayPal account needs
+  the app template (server code and webhooks).
+- `AGENTS.md`: the video rule no longer bans comedy or entertainment as such; never movies or films, TV dramas, music
+  videos or indecent content.
+
+## 0.7.16
+
+- `AGENTS.md`: the platform's video needs the app template (its links are made per viewer by a server); a public YouTube,
+  Vimeo or Wistia embed works here (`fast.wistia.net` added to `frame-src`); never the owner's own storage or a direct
+  video file link. `package.json`: `astro` raised to a version without known security problems.
+- `AGENTS.md`: the platform's video is for teaching, coaching, talks and group or business video; never build movie,
+  film, TV-drama, music-video or entertainment features on it, and refuse such a request in one plain line.
+
 ## 0.7.15
 
 - **Required upgrade.** Clearer steps on a developer's own computer. `scripts/platform.mjs`: `check` on a `template.json` left on

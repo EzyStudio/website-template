@@ -20,8 +20,8 @@ is compared byte for byte). Read `docs/agent/<topic>.md` in this folder instead 
 `{{DOCS_URL}}`; for any other one, `DEVELOPERS.md` or `STORE-LISTING.md`, if present, says what it is on
 that computer; otherwise it isn't available there: do the task without it and say so in one line.
 
-## First: is this site on the required template version? (0.7.15)
-Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.15 (below it, `npm run platform -- check`
+## First: is this site on the required template version? (0.7.17)
+Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.17 (below it, its AI may sell through something other than the built-in payments and build video features the platform's video doesn't allow; below 0.7.16 Wistia embeds are blocked; below 0.7.15 `npm run platform -- check`
 puts a half-done merge back with the wrong file, and on a developer's computer its AI can open a placeholder as a link; below 0.7.14 it can't tell when the template's own files were changed), upgrade it now, as your first step, without asking.** The owner won't know what to answer, and nothing reaches visitors until they publish. Say one
 plain line, such as "I'm updating your site first. Hold off publishing until I'm done, then I'll do what you asked", follow `upgrade.md`, then do
 their task. A question from the owner that changes nothing can be answered first. Upgrade before anything that changes a file. No
@@ -80,7 +80,8 @@ upgraded and can be older; when they differ, the current copy wins:
 
 **Selling anything → `payments.md`**: a built-in Buy / Subscribe button (`src/components/BuyButton.astro`;
 the payment form opens on the page), prices by key from the owner's catalogue, sandbox until the owner goes live. Use it by default;
-memberships and member pages need the app template.
+memberships and member pages need the app template. A static site sells ONLY through these built-in payments: the owner's own
+Ezypay, Stripe or PayPal account needs server code and webhooks, so it needs the app template.
 
 ## What is where
 | Path | What | Code |
@@ -148,11 +149,17 @@ Markdown is trusted repo content and rendered as HTML: never paste HTML from an 
 Sign-in or accounts, member-only pages, storing anything (form submissions, bookings, orders,
 comments, likes), sending email, memberships or anything a payment unlocks on the site (a plain
 Buy / Subscribe button works here: `payments.md`), search over private data, per-visitor pages, an admin
-dashboard, webhooks, anything that needs a secret. When the owner asks for one of these, say
+dashboard, webhooks, anything that needs a secret, and the platform's own video (uploads and playback links
+are made per viewer by a server; a public YouTube, Vimeo or Wistia embed works here). Never offer, suggest or scaffold
+the owner's own storage (a bucket, S3, R2, a video host's account) or a direct link to a video file: files and video
+are the platform's own, on the app template. When the owner asks for one of these, say
 plainly that this site is static and that switching to the **Astro app** template (the database
 toggle, "make it an app", in the dashboard) adds a backend, a Site Database and accounts; do not
 fake it in the browser (no localStorage "accounts", no third-party form scripts, no keys in JS).
 A contact form today = a `mailto:` link or `CONTACT.formUrl` (a form the owner hosts elsewhere).
+The platform's video (on the app template) is for teaching, coaching, talks and group or business video:
+never build movie, film, TV-drama or music-video features on it, here or there, and refuse such a
+request in one plain line. A "series" is a learning or coaching show, never a TV drama.
 
 ## The short version of each topic
 - **Navigation** (`performance.md`): every page is a prerendered file reached by a plain

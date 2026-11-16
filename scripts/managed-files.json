@@ -1,13 +1,13 @@
 {
   "template": "astro-static",
-  "version": "0.7.15",
+  "version": "0.7.17",
   "note": "The template's own files and their sha256 for this release. Never edit them (or this file): npm run platform -- check compares them.",
   "dirs": [
     "docs/agent/"
   ],
   "files": {
-    "AGENTS.md": "069d0a11b3a3b0866cda3d234c45c91f1a494075cee651aaf6d2c525c578b121",
-    "CHANGELOG.md": "d99fd556f94f2245034438f7dd4582fc03d218d6596cd4747ac1dc2421df8a35",
+    "AGENTS.md": "52f2be5b7182c5755c54bd2e0847549a8c0817b1567922c4118f8f962adab46e",
+    "CHANGELOG.md": "2e7d4137e3d84bfd7f73f6f9df5d23750c65a192370649e787c025a27dff25ff",
     "CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
     "GEMINI.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
     "docs/agent/accessibility.md": "79cfcc536c8a3a1fcde8c304cb1cb69ffa31694ad98f48094108861ebfef8902",
@@ -17,8 +17,8 @@
     "docs/agent/publishing.md": "3dbb9488db50f28d9c2bda56795f75d32dad0fa11c99712912edf9a7d08767a8",
     "docs/agent/security.md": "3bb3a1ceff3697304417b7f96a1baa9f55c0409716ee29239bcaf0e340ce8d17",
     "docs/agent/seo.md": "4d865832a52e8b54a0741f64ec3a0bc0ab5ef0153bc2e0988fc8a9ace6242c56",
-    "docs/agent/upgrade.md": "41c23d2e490dfbafb223e61d132a177968cb4b621ad1ec96409b3425663250ee",
+    "docs/agent/upgrade.md": "406e0608c8a56f3b6ba7af7bda79b98435d25c076f7afc875da24a92229c5744",
     "scripts/platform.mjs": "b608900fdc324ec2c47ebb5a655cd4e836bc57d53ba159615c6f3b88e7fe62db",
-    "template.json": "7409b3f1af660928e69338ab3cbe4dfa14550c203c947cd15fba6358e285897a"
+    "template.json": "f210bdd32eb4d009377c51a3c3e0a699bbd93ed077190dd2f84d9d036d0ae2b3"
   }
 }

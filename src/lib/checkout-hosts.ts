@@ -21,7 +21,7 @@ export const CHECKOUT_HOSTS = {
 } as const;
 
 /** The site-wide frame hosts (`astro.config.mjs`), kept when this page widens `frame-src`. */
-const SITE_FRAMES = ['https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://player.vimeo.com'];
+const SITE_FRAMES = ['https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://player.vimeo.com', 'https://fast.wistia.net'];
 
 interface CspApi {
   insertDirective: (directive: string) => void;

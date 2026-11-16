@@ -21,17 +21,22 @@ import {join} from 'node:path';
 const RULES = {
   "kit": {
     "template": "astro-static",
-    "version": "0.7.15",
-    "madeOn": "2026-11-08"
+    "version": "0.7.17",
+    "madeOn": "2026-11-16"
   },
   "versionsUrl": "https://ezystudio.com/api/public/templates/v1/versions",
   "templateFile": "template.json",
   "addOnManifest": "ZXp5c3R1ZGlvLWFwcC5qc29u",
   "managedCoreDir": "src/platform/",
   "seedFile": "prisma/seed.sql",
+  "demoLogin": {
+    "file": "prisma/demo-login.sql",
+    "required": false,
+    "exampleSha": null
+  },
   "managedCore": null,
   "agentInstructions": {
-    "AGENTS.md": "069d0a11b3a3b0866cda3d234c45c91f1a494075cee651aaf6d2c525c578b121",
+    "AGENTS.md": "52f2be5b7182c5755c54bd2e0847549a8c0817b1567922c4118f8f962adab46e",
     "CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
     "docs/agent/accessibility.md": "79cfcc536c8a3a1fcde8c304cb1cb69ffa31694ad98f48094108861ebfef8902",
     "docs/agent/payments.md": "b38d0d5b9a21f93515c2bbe2d0749e185a24b9e573b272b776e56be3efc98287",
@@ -40,14 +45,14 @@ const RULES = {
     "docs/agent/publishing.md": "3dbb9488db50f28d9c2bda56795f75d32dad0fa11c99712912edf9a7d08767a8",
     "docs/agent/security.md": "3bb3a1ceff3697304417b7f96a1baa9f55c0409716ee29239bcaf0e340ce8d17",
     "docs/agent/seo.md": "4d865832a52e8b54a0741f64ec3a0bc0ab5ef0153bc2e0988fc8a9ace6242c56",
-    "docs/agent/upgrade.md": "41c23d2e490dfbafb223e61d132a177968cb4b621ad1ec96409b3425663250ee",
+    "docs/agent/upgrade.md": "406e0608c8a56f3b6ba7af7bda79b98435d25c076f7afc875da24a92229c5744",
     "GEMINI.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
   },
   "managedFiles": {
-    "CHANGELOG.md": "d99fd556f94f2245034438f7dd4582fc03d218d6596cd4747ac1dc2421df8a35",
-    "scripts/managed-files.json": "09d5d3f61eccba6d746b8efe60250fbec774102bac629128be9e78413fb6748d",
+    "CHANGELOG.md": "2e7d4137e3d84bfd7f73f6f9df5d23750c65a192370649e787c025a27dff25ff",
+    "scripts/managed-files.json": "d7ad0753cd9cef1cf56b6ac09f8c1795bee30491206c9087924068d8c6ae345b",
     "scripts/platform.mjs": "b608900fdc324ec2c47ebb5a655cd4e836bc57d53ba159615c6f3b88e7fe62db",
-    "template.json": "7409b3f1af660928e69338ab3cbe4dfa14550c203c947cd15fba6358e285897a"
+    "template.json": "f210bdd32eb4d009377c51a3c3e0a699bbd93ed077190dd2f84d9d036d0ae2b3"
   },
   "developerFiles": [
     "DEVELOPERS.md",
@@ -466,6 +471,297 @@ const RULES = {
     "pathLength": 240
   }
 };
+// The demo login file's scanner: the store's own (apps/api demo_login_sql_policy.ts), printed here.
+const demoLoginSqlProblems = function demoLoginSqlProblems(sql, max = 20) {
+    const problems = [];
+    const lineAt = (offset)=>{
+        let line = 1;
+        for(let k = 0; k < offset && k < sql.length; k++)if (sql[k] === '\n') line++;
+        return line;
+    };
+    // Tokens: w = word (upper case), q = quoted name, s = string, p = punctuation.
+    const tokens = [];
+    const n = sql.length;
+    let i = 0;
+    const fail = (at, what)=>{
+        problems.push({
+            line: lineAt(at),
+            what
+        });
+    };
+    while(i < n){
+        const c = sql[i];
+        if (c === '-' && sql[i + 1] === '-') {
+            while(i < n && sql[i] !== '\n')i++;
+            continue;
+        }
+        if (c === '/' && sql[i + 1] === '*') {
+            const start = i;
+            let depth = 1;
+            i += 2;
+            while(i < n && depth > 0){
+                if (sql[i] === '/' && sql[i + 1] === '*') {
+                    depth++;
+                    i += 2;
+                } else if (sql[i] === '*' && sql[i + 1] === '/') {
+                    depth--;
+                    i += 2;
+                } else i++;
+            }
+            if (depth > 0) {
+                fail(start, "can't be read as SQL (a comment never ends)");
+                return problems;
+            }
+            continue;
+        }
+        if (/\s/.test(c)) {
+            i++;
+            continue;
+        }
+        if (c === "'" || (c === 'E' || c === 'e') && sql[i + 1] === "'") {
+            const start = i;
+            const escapes = c !== "'";
+            let k = escapes ? i + 2 : i + 1;
+            let closed = false;
+            while(k < n){
+                if (escapes && sql[k] === '\\') {
+                    k += 2;
+                    continue;
+                }
+                if (sql[k] === "'") {
+                    if (sql[k + 1] === "'") {
+                        k += 2;
+                        continue;
+                    }
+                    closed = true;
+                    k++;
+                    break;
+                }
+                k++;
+            }
+            if (!closed) {
+                fail(start, "can't be read as SQL (a string never ends)");
+                return problems;
+            }
+            tokens.push({
+                k: 's',
+                v: '',
+                at: start
+            });
+            i = k;
+            continue;
+        }
+        if (c === '"') {
+            const start = i;
+            let k = i + 1;
+            let value = '';
+            let closed = false;
+            while(k < n){
+                if (sql[k] === '"') {
+                    if (sql[k + 1] === '"') {
+                        value += '"';
+                        k += 2;
+                        continue;
+                    }
+                    closed = true;
+                    k++;
+                    break;
+                }
+                value += sql[k];
+                k++;
+            }
+            if (!closed) {
+                fail(start, "can't be read as SQL (a quoted name never ends)");
+                return problems;
+            }
+            tokens.push({
+                k: 'q',
+                v: value.toUpperCase(),
+                at: start
+            });
+            i = k;
+            continue;
+        }
+        if (c === '$') {
+            fail(i, 'uses dollar quoting or a parameter ($): write plain quoted text');
+            return problems;
+        }
+        if (/[A-Za-z_\u0080-￿]/.test(c)) {
+            const start = i;
+            if ((c === 'U' || c === 'u') && sql[i + 1] === '&') {
+                fail(start, 'spells a name or text with escape codes (U&)');
+                return problems;
+            }
+            if (/[BbXxNn]/.test(c) && sql[i + 1] === "'") {
+                i++;
+                continue; // a B'…' / X'…' / N'…' string: the quote is read next
+            }
+            i++;
+            while(i < n && /[A-Za-z0-9_$\u0080-￿]/.test(sql[i]))i++;
+            tokens.push({
+                k: 'w',
+                v: sql.slice(start, i).toUpperCase(),
+                at: start
+            });
+            continue;
+        }
+        if (/[0-9]/.test(c) || c === '.' && /[0-9]/.test(sql[i + 1] ?? '')) {
+            i++;
+            while(i < n && /[0-9.]/.test(sql[i]))i++;
+            if (/[eE]/.test(sql[i] ?? '') && /[0-9+-]/.test(sql[i + 1] ?? '')) {
+                i += 2;
+                while(i < n && /[0-9]/.test(sql[i]))i++;
+            }
+            continue;
+        }
+        tokens.push({
+            k: 'p',
+            v: c,
+            at: i
+        });
+        i++;
+    }
+    // Statements, split on `;`.
+    const statements = [];
+    let current = [];
+    for (const t of tokens){
+        if (t.k === 'p' && t.v === ';') {
+            if (current.length) statements.push(current);
+            current = [];
+        } else current.push(t);
+    }
+    if (current.length) statements.push(current);
+    const REFUSED_WORDS = {
+        CREATE: 'creates something (CREATE)',
+        ALTER: 'changes the schema (ALTER)',
+        DROP: 'drops something (DROP)',
+        TRUNCATE: 'empties a table (TRUNCATE)',
+        DELETE: 'deletes rows (DELETE)',
+        GRANT: 'grants database rights (GRANT)',
+        REVOKE: 'takes away database rights (REVOKE)',
+        COPY: 'reads or writes files (COPY)',
+        EXECUTE: 'runs SQL built from text (EXECUTE)',
+        CALL: 'calls a procedure (CALL)',
+        WITH: 'uses WITH (write each statement on its own)',
+        STANDARD_CONFORMING_STRINGS: 'changes how text is read',
+        BACKSLASH_QUOTE: 'changes how text is read',
+        INFORMATION_SCHEMA: 'reads the database catalogue'
+    };
+    const FUNCTIONS = new Set([
+        'NOW',
+        'LOWER',
+        'UPPER',
+        'TRIM',
+        'COALESCE',
+        'NULLIF',
+        'CONCAT',
+        'GEN_RANDOM_UUID',
+        'CAST',
+        'JSONB_BUILD_OBJECT',
+        'JSON_BUILD_OBJECT',
+        'JSONB_BUILD_ARRAY',
+        'JSON_BUILD_ARRAY',
+        'ARRAY',
+        'ROW'
+    ]);
+    // Words that may come right before `(` without being a call.
+    const BEFORE_PAREN = new Set([
+        'VALUES',
+        'IN',
+        'ANY',
+        'ALL',
+        'EXISTS',
+        'CONFLICT',
+        'FROM',
+        'JOIN',
+        'SELECT',
+        'WHERE',
+        'AND',
+        'OR',
+        'NOT',
+        'ON',
+        'SET',
+        'BY',
+        'THEN',
+        'ELSE',
+        'WHEN',
+        'CASE',
+        'IS',
+        'AS',
+        'DISTINCT',
+        'USING',
+        'LATERAL'
+    ]);
+    for (const st of statements){
+        if (problems.length >= max) break;
+        const at = st[0].at;
+        const first = st[0];
+        const words = st.filter((t)=>t.k === 'w').map((t)=>t.v);
+        const head = first.k === 'w' ? first.v : '';
+        if (head === 'BEGIN' || head === 'COMMIT') {
+            const rest = words.slice(1).filter((w)=>w !== 'TRANSACTION' && w !== 'WORK');
+            if (rest.length || st.some((t)=>t.k !== 'w')) fail(at, `has a ${head} with more after it`);
+            continue;
+        }
+        if (head !== 'INSERT' && head !== 'UPDATE') {
+            fail(at, `starts with ${head || 'something'}: only INSERT … ON CONFLICT and UPDATE are allowed`);
+            continue;
+        }
+        let what = null;
+        for (const w of words){
+            if (REFUSED_WORDS[w]) {
+                what = REFUSED_WORDS[w];
+                break;
+            }
+            if (/^PG_/.test(w) || w === '_PRISMA_MIGRATIONS') {
+                what = `uses ${w.toLowerCase()}, a system table or function`;
+                break;
+            }
+        }
+        if (!what) {
+            for (const t of st){
+                if (t.k === 'q' && (/^PG_/.test(t.v) || t.v === '_PRISMA_MIGRATIONS' || t.v === 'INFORMATION_SCHEMA')) {
+                    what = `uses ${t.v.toLowerCase()}, a system table or function`;
+                    break;
+                }
+            }
+        }
+        if (!what && head === 'INSERT') {
+            if (words[1] !== 'INTO') what = 'is an INSERT without INTO';
+            else if (!/\bON CONFLICT\b/.test(words.join(' '))) what = 'is an INSERT without ON CONFLICT (it must be safe to run twice)';
+        }
+        if (!what) {
+            // The target table: plain, never schema-qualified.
+            const target = head === 'INSERT' ? 2 : 1;
+            let k = target;
+            if (head === 'UPDATE' && st[k]?.k === 'w' && st[k].v === 'ONLY') k++;
+            const table = st[k];
+            if (!table || table.k !== 'w' && table.k !== 'q') what = 'names no table';
+            else if (st[k + 1]?.k === 'p' && st[k + 1].v === '.') what = "names a table in another schema: use this app's own tables";
+        }
+        if (!what) {
+            // Every `(` after a word or a quoted name: a keyword, a table / alias column list, or an allowed function.
+            for(let k = 1; k < st.length && !what; k++){
+                const t = st[k];
+                if (t.k !== 'p' || t.v !== '(') continue;
+                const before = st[k - 1];
+                const twoBefore = st[k - 2];
+                if (before.k === 'p' || before.k === 's') continue;
+                const listAfter = twoBefore && twoBefore.k === 'w' && (twoBefore.v === 'INTO' || twoBefore.v === 'AS');
+                if (listAfter) continue;
+                if (before.k === 'w' && (BEFORE_PAREN.has(before.v) || FUNCTIONS.has(before.v))) continue;
+                what = `calls ${before.v.toLowerCase() || 'a function'}(): only now(), lower(), coalesce() and other plain functions are allowed`;
+            }
+        }
+        if (!what && head === 'INSERT') {
+            // `INSERT INTO t (…) SELECT … INTO x`: SELECT INTO makes a table.
+            const intos = words.filter((w)=>w === 'INTO').length;
+            if (intos > 1) what = 'uses SELECT … INTO (it makes a table)';
+        }
+        if (what) fail(at, what);
+    }
+    return problems.slice(0, max);
+};
 
 const re = rule => new RegExp(rule.source, rule.flags);
 const DEPLOY_CONFIG = re(RULES.deployConfig);
@@ -747,7 +1043,7 @@ function run() {
     const content = readFileSync(full);
     if (path.startsWith(RULES.managedCoreDir)) hashes.set(path, sha(content));
     if (isInstruction(path)) instructionHashes.set(path, sha(content));
-    if ((RULES.managedFiles && path in RULES.managedFiles) || path === RULES.seedFile) contents.set(path, content);
+    if ((RULES.managedFiles && path in RULES.managedFiles) || path === RULES.seedFile || path === RULES.demoLogin.file) contents.set(path, content);
     if (path.startsWith(RULES.managedCoreDir) || isInstruction(path)) contents.set(path, content);
     if (!content.subarray(0, 8000).includes(0)) {
       const text = content.toString('utf8');
@@ -840,6 +1136,20 @@ function run() {
     else if (RULES.seed.exampleSha && sha(seed) === RULES.seed.exampleSha)
       warn(RULES.seedFile, 'still the template\'s example (its job board\'s sample jobs). Replace it with sample data for your app: it loads into review and your public preview, and fails there if your schema has no "jobs" table.');
     else pass(RULES.seedFile, 'your sample data. The review checks what it may do; load it twice on your machine (npm run db:seed) to be sure it is safe to run twice.');
+  }
+
+  // The read-only demo admin (web apps): required and data only (submit: demo_login_missing, demo_login_unsafe).
+  if (RULES.demoLogin.required) {
+    const file = contents.get(RULES.demoLogin.file);
+    const sql = file ? file.toString('utf8') : '';
+    const problems = sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ').trim() ? demoLoginSqlProblems(sql, 5) : null;
+    if (!problems)
+      fail(RULES.demoLogin.file + ' (demo_login_missing)', 'Add the read-only demo admin for the store\'s previews: npm run platform -- demo-login --email <email> --password <password> (docs/agent/store-apps.md).');
+    else if (problems.length)
+      fail(RULES.demoLogin.file + ' (demo_login_unsafe)', 'It may only INSERT … ON CONFLICT and UPDATE your app\'s own tables (docs/agent/store-apps.md).', problems.map(p => 'line ' + p.line + ' ' + p.what));
+    else if (RULES.demoLogin.exampleSha && sha(file) === RULES.demoLogin.exampleSha)
+      warn(RULES.demoLogin.file, 'still the template\'s example (demo@example.com). Make your own: npm run platform -- demo-login --email <email> --password <password>, and give the same on the submission form.');
+    else pass(RULES.demoLogin.file, 'data only. Give the same email and password on the submission form, and keep <DemoLogin /> on your sign-in page.');
   }
 
   if (credentials.length)

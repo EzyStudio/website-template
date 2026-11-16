@@ -1,6 +1,6 @@
 {
   "name": "site-static",
-  "version": "0.7.15",
+  "version": "0.7.17",
   "private": true,
   "type": "module",
   "engines": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "10.1.0",
-    "astro": "^7.3.8"
+    "astro": "^7.4.7"
   },
   "allowScripts": {
     "fsevents": false

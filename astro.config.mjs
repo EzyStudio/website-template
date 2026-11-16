@@ -54,7 +54,7 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self' mailto:",
         // Video players a post may embed (an <iframe> in its Markdown).
-        'frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com',
+        'frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://fast.wistia.net',
       ],
     },
   },

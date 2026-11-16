@@ -37,8 +37,11 @@ Start with a clean git tree: commit what's there. Never stash: Publish ships the
    had any (an app built for the store keeps it exactly as the template has it; `CLAUDE.md` and `GEMINI.md` are unchanged).
    `README.md`: if this site still has the template's, copy the template's "Staying up to date" and "Troubleshooting" parts.
    A site that rewrote it: leave it.
-6. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
-7. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
+6. **Coming from below 0.7.16** (Wistia embeds). The upgrade leaves these: add ` https://fast.wistia.net` at the end of the
+   `frame-src` line in `astro.config.mjs`, and `'https://fast.wistia.net'` at the end of `SITE_FRAMES` in `src/lib/checkout-hosts.ts`.
+7. **Coming from below 0.7.17** (rules only: selling goes through the built-in payments; what the platform's video is for). Nothing to change in the files the upgrade leaves.
+8. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
+9. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
 
 ## If it can't finish
 Stop before committing, restore with `git checkout .` and `git clean -fd` on what the upgrade added, do the owner's task, and tell them it didn't finish. The site keeps
