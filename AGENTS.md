@@ -1,7 +1,7 @@
 # Rules for AI agents working in this site
 
-The single source of rules for EVERY coding agent (Claude Code, Codex, Gemini, Cursor…).
-`CLAUDE.md` and `GEMINI.md` only import this file: edit here, never there.
+The single source of rules for EVERY coding agent (Claude Code, Codex, Cursor…).
+The other rule files at the root (`CLAUDE.md`…) only import this file: edit here, never there.
 
 This repo is ONE **static** website: Astro 7, every page prerendered to plain files
 (`output: 'static'`, no adapter). No server code, no backend, no database, no secrets, no client
@@ -62,6 +62,31 @@ as it was built. The owner is not an engineer: they say WHAT they want; HOW is y
    weight), fix what they find, and end your answer with a short report: what you checked, what
    you fixed, what is left.
 
+## How changes go live (details: `publishing.md`)
+You edit a working copy; the OWNER publishes from the editor (Prepare → Build:
+`npm ci`, `npm run build` → Deploy of `dist/` as plain files). You cannot deploy. Keep
+`npm run dev` working at `/`; before saying "done", `npm run build` passes and the Preview shows
+every changed page. No wrangler config, no `base`, no `.github/workflows`, npm with one
+committed lockfile.
+
+## The Preview, git and the machine in the editor (NON-NEGOTIABLE)
+- The editor runs the Preview's dev server on ONE fixed port: Astro 4321, a Static site 8788 (TanStack Start 3000), or
+  the port the project's own config names. Never start your own (`npm run dev`, `astro dev`, `npm run preview`,
+  `wrangler dev`), never pass `--port`, never kill it: each Preview start stops whatever holds that port.
+- See it and restart it with `{{PREVIEW_COMMAND}} status`, `{{PREVIEW_COMMAND}} logs [-n N]` (the end of `{{PREVIEW_LOG}}`) and
+  `{{PREVIEW_COMMAND}} restart` (the owner's Restart button). No `{{PREVIEW_COMMAND}}` (an older editor): read `{{PREVIEW_LOG}}` and ask
+  the owner to press Restart. **Preview broken: follow `preview.md`** (status, logs, then the usual causes: port taken,
+  missing packages, crashed server, stale generated file, merge conflict).
+- Generated files (`.astro/`, `dist/`, `src/routeTree.gen.ts`) are never edited by hand: change their source and regenerate.
+- `git status` first: a platform import can leave the project mid-merge. Unmerged files or `<<<<<<<` markers: finish that
+  merge before anything else (`preview.md`).
+- `origin` is the platform's git proxy: `git push` works only while the editor session is open and answers 403 after it
+  ended. Never change the remote or ask for a token.
+- A setting the owner changes reaches the Preview only at the next Open, and that Open stops every process in the
+  sandbox, yours included: commit first, then ask the owner to reopen the editor.
+- You share CPU and memory with the Preview and the editor: check `nproc` and `free -m` before heavy work; kill what
+  you start; one heavy command at a time; bounded commands (no `find /`, no grep over `node_modules`).
+
 ## Topic docs: read the one that fits BEFORE that work
 Read the current copy: `{{DOCS_DIR}}/<topic>.md` in the editor, else `{{DOCS_URL}}/<topic>.md` on this
 site's address. `docs/agent/<topic>.md` in this repo is the copy from when the site was built or last
@@ -74,7 +99,8 @@ upgraded and can be older; when they differ, the current copy wins:
 | `seo.md` | a new page, a title or description, URLs, social cards, a blog post |
 | `security.md` | any script, embed, external link, header, CSP or dependency; before "done" |
 | `upgrade.md` | this site's `template.json` is below the required version, or the owner asks to upgrade |
-| `publishing.md` | git, scripts, dependencies, config, redirects, the Preview, going live |
+| `preview.md` | the Preview is broken, blank or stale; the dev server, its port or log; a half-done merge |
+| `publishing.md` | git, scripts, dependencies, config, redirects, going live |
 | `payments.md` | anything sold: a Buy or Subscribe button, a price, a checkout, a thank-you page after paying |
 | `plans-catalogue.md` | the platform's plans an owner resells (sign-up links to their studio), not the site's own products; their real plans: `npm run platform -- plans --write` |
 
@@ -182,12 +208,6 @@ request in one plain line. A "series" is a learning or coaching show, never a TV
   input to validate and no session to protect: anything that needs input validation, CSRF
   protection or rate limits (forms that store, sign-in) is the app template's job.
 
-## Machine limits (the editor)
-You share the editor sandbox with the Preview dev server the owner is watching. Check `nproc`
-and `free -m` before heavy work; ONE dev server ever (the editor's; never start `astro dev` or
-`npm run preview` yourself); kill what you start; one heavy command at a time; bounded commands
-(no `find /`, no grep over `node_modules`).
-
 ## Recipes
 - **A new page**: `src/pages/<name>.astro` (lowercase, dashes) with `<Base title description>`,
   words in `src/content/site.ts`, add it to `NAV` if it belongs in the menu. It is static,
@@ -234,10 +254,3 @@ and `free -m` before heavy work; ONE dev server ever (the editor's; never start 
 - Renaming a published post's file, deleting `404.astro`, `sitemap.xml.ts` or `robots.txt.ts`,
   `Disallow: /` or `noindex` on real pages unless the owner asks for exactly that.
 - Anything under `{{API_PREFIX}}` or `/site-api`; a second lockfile or package manager.
-
-## How changes go live (details: `publishing.md`)
-You edit a working copy; the OWNER publishes from the editor (Prepare → Build:
-`npm ci`, `npm run build` → Deploy of `dist/` as plain files). You cannot deploy. Keep
-`npm run dev` working at `/`; before saying "done", `npm run build` passes and the Preview shows
-every changed page. No wrangler config, no `base`, no `.github/workflows`, npm with one
-committed lockfile.

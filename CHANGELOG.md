@@ -4,6 +4,16 @@ Template releases. `npm run platform -- check` says when a newer one is out;
 `npm run platform -- upgrade` applies it (see `scripts/platform.mjs`).
 Managed by the template: replaced on upgrade.
 
+## 0.7.18
+
+- Optional upgrade, rules only. What the AI is told about the Preview and git in the editor: `docs/agent/preview.md` (new):
+  the Preview's one fixed port, a command to see, read and restart it, where its log is, a fix-it checklist, generated files
+  never edited by hand, `origin` is the platform's git proxy (a push answers 403 once the editor session ended), and a change
+  reaches the Preview only at the next Open, which stops every process in the sandbox.
+- `AGENTS.md`: "How changes go live" and the Preview rules come right after "Every task". `docs/agent/publishing.md` points to
+  `preview.md`.
+- Steps for an existing site: `docs/agent/upgrade.md` step 7.
+
 ## 0.7.17
 
 - `AGENTS.md`: a static site sells only through the built-in payments; the owner's own Ezypay, Stripe or PayPal account needs

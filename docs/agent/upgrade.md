@@ -40,6 +40,9 @@ Start with a clean git tree: commit what's there. Never stash: Publish ships the
 6. **Coming from below 0.7.16** (Wistia embeds). The upgrade leaves these: add ` https://fast.wistia.net` at the end of the
    `frame-src` line in `astro.config.mjs`, and `'https://fast.wistia.net'` at the end of `SITE_FRAMES` in `src/lib/checkout-hosts.ts`.
 7. **Coming from below 0.7.17** (rules only: selling goes through the built-in payments; what the platform's video is for). Nothing to change in the files the upgrade leaves.
+   **Coming from below 0.7.18** (rules only, optional: the Preview and git in the editor). `docs/agent/preview.md` arrives with the
+   upgrade. `AGENTS.md`: copy the template's (`cp /tmp/site-template/AGENTS.md AGENTS.md`) and add this site's own rules back at its
+   end, if it had any. Nothing in the site's pages changes.
 8. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
 9. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
 

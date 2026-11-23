@@ -1,10 +1,10 @@
 # Store listing: a whole static site
 
-This repository is the Website template (`astro-static`), release 0.7.17: exactly what every new
+This repository is the Website template (`astro-static`), release 0.7.18: exactly what every new
 site starts from, plus four files for you, the developer:
 - `DEVELOPERS.md`: setting up, your admin account, updates by `git merge`, and steps for your AI.
 - `STORE-LISTING.md` (this file): what the store needs from a whole-site listing, and how review works.
-- `store-check.mjs`: the store's checks for release 0.7.17, run on your machine with `node store-check.mjs`.
+- `store-check.mjs`: the store's checks for release 0.7.18, run on your machine with `node store-check.mjs`.
 - `LICENSE`: what you may do with the template.
 
 Keep them committed: each release updates them when you merge it. Submit leaves all four out, so they
@@ -20,6 +20,8 @@ on your machine:
 - `{{DOCS_URL}}`: the current rules, on a hosted site's address (`/api/public/site/v1/agent-docs`). On your machine: `docs/agent/` in this folder (or `npm run platform -- docs --site <a hosted site>`).
 - `{{DOCS_DIR}}`: the current rules folder, in the editor. On your machine: `docs/agent/` in this folder.
 - `{{TEMPLATE_ZIP}}`: the copy of the newest template the platform provides in the editor. On your machine: the newest release tag of this repository (`git fetch upstream --tags`, then `git merge` it: DEVELOPERS.md).
+- `{{PREVIEW_COMMAND}}`: the editor's command to see, read and restart the Preview's dev server. On your machine: not available: you run `npm run dev` yourself and restart it with Ctrl+C.
+- `{{PREVIEW_LOG}}`: the Preview dev server's log file, in the editor. On your machine: the terminal where `npm run dev` runs.
 - `{{SITE_ORIGIN_PATTERN}}`: a site's free address on the platform. On your machine: http://localhost:4321.
 
 ## 1. What you are building
@@ -45,7 +47,7 @@ This repository is for a **static site**.
 ## 3. The rules
 Submit refuses a version on the first one it breaks, and says which file and how to fix it.
 `node store-check.mjs` runs the same checks before you push.
-- **`template.json`** stays as the template wrote it (version `0.7.17` in this release).
+- **`template.json`** stays as the template wrote it (version `0.7.18` in this release).
   The version must be the template's CURRENT release on the day you submit, for a first version and for every
   update: older is refused, and so is any version that isn't a release. When a newer one comes out, merge it:
   `git fetch upstream --tags`, then `git merge "$(git describe --tags --abbrev=0 upstream/main)"`
@@ -56,7 +58,7 @@ Submit refuses a version on the first one it breaks, and says which file and how
 - **The template's own files untouched:** `template.json`, `CHANGELOG.md`, `scripts/platform.mjs`, `scripts/managed-files.json`. Byte for byte this release's copies,
   none deleted. (`managed_file_changed`)
 - **Put any of them back** with git, from the release tag you are on:
-  `git checkout v0.7.17 -- docs/agent AGENTS.md CLAUDE.md GEMINI.md template.json CHANGELOG.md scripts/platform.mjs scripts/managed-files.json`
+  `git checkout v0.7.18 -- docs/agent AGENTS.md CLAUDE.md GEMINI.md template.json CHANGELOG.md scripts/platform.mjs scripts/managed-files.json`
   Line endings count: the template's `.gitattributes` keeps every text file LF, also on Windows.
 - **Instructions for the customer's AI untouched.** Keep `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and `docs/agent/`
   as the template has them: they are the template's instructions for the AI that works on the customer's site
