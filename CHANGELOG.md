@@ -4,6 +4,20 @@ Template releases. `npm run platform -- check` says when a newer one is out;
 `npm run platform -- upgrade` applies it (see `scripts/platform.mjs`).
 Managed by the template: replaced on upgrade.
 
+## 0.7.19
+
+- Required. Pages with their own styles no longer show unstyled after a click from another page. The CSS was inlined
+  into each page (`build.inlineStylesheets: 'always'`) with that page's CSP hash; the client router keeps the first
+  page's CSP, so the next page's CSS was blocked. `astro.config.mjs`: `inlineStylesheets: 'never'` (CSS ships as a
+  cached file, allowed by `style-src 'self'`). `docs/agent/performance.md`: never inline stylesheets.
+- Required. The owner's outside scripts and widgets work (a testimonial wall, chat, analytics, a booking or form
+  widget, a tag manager): the AI adds the provider's snippet on the page that shows it instead of refusing.
+  `<Base outsideScripts>` opens that page's CSP to any https script, style, font, frame and connection, inline
+  snippets included (`src/lib/outside-scripts.ts`, new), and leaves out `<ClientRouter />` there, so entering or leaving
+  it is a full page load under that page's own policy. Every other page keeps the strict CSP. `docs/agent/security.md`
+  "Outside scripts and widgets"; `AGENTS.md`, `docs/agent/performance.md` follow.
+- Steps for an existing site: `docs/agent/upgrade.md` step 8.
+
 ## 0.7.18
 
 - Optional upgrade, rules only. What the AI is told about the Preview and git in the editor: `docs/agent/preview.md` (new):

@@ -1,9 +1,10 @@
 ---
 title: Security: a static site with nothing to steal
-read-when: before adding a script, an embed, an external link or image host, a header, a CSP change or a dependency; and before telling the owner a change is done
+read-when: before adding a script, a widget, an embed, an external link or image host, a header, a CSP change or a dependency; and before telling the owner a change is done
 ---
 There is no server, database or session here, so most attacks have nothing to reach. What is
-left is the browser: keep scripts out, keep the headers on, keep secrets out of the repo.
+left is the browser: keep the site's own code clean, keep the headers on, keep secrets out of the repo.
+It is the owner's site: an outside script or widget they ask for is theirs to add (below).
 
 ## No secrets, ever
 - Everything in this repo and in `dist/` is public: anyone can read it. Never put a key, token,
@@ -14,8 +15,9 @@ left is the browser: keep scripts out, keep the headers on, keep secrets out of 
 ## Content-Security-Policy (`security.csp` in `astro.config.mjs`)
 - Astro writes the policy into every page with a hash for each script and style it emits.
   Never add `'unsafe-inline'` or `'unsafe-eval'`, never weaken `default-src 'self'`.
-- So: no inline event handlers (`onclick=`), no `style=""` attributes (use classes), no
-  `javascript:` links, no third-party `<script src>` tags, no `is:inline` scripts.
+- So, in the site's own code: no inline event handlers (`onclick=`), no `style=""` attributes
+  (use classes), no `javascript:` links, no `is:inline` scripts. The owner's outside scripts and
+  widgets are the exception, on their own page: "Outside scripts and widgets" below.
 - `connect-src 'self'`: the browser calls only this host (the live prices, the Buy button's
   checkout under the platform's path). Leave it. The one exception is built in: a page with a
   `<BuyButton>` allows the payment form's hosts (Stripe, Razorpay) on that page only
@@ -35,8 +37,9 @@ add, never remove. HTTPS and HSTS are the platform's. Never add `Access-Control-
 
 ## HTML and URLs
 - Astro escapes `{value}`. Never `set:html` / `innerHTML` with anything not written in this repo.
-  Build DOM from data with `textContent`. HTML from outside the repo (pasted from a widget, an
-  email) never goes into a page or a post; if the owner insists, sanitize it at build time.
+  Build DOM from data with `textContent`. HTML from outside the repo (an email, a
+  page copied from elsewhere) never goes into a page or a post; if the owner insists, sanitize it at
+  build time. A provider's widget snippet is different: it is code the owner chose (below).
 - Markdown posts are trusted repo content and rendered as HTML: review what goes in.
 - URLs from content: `https:` (and `mailto:` for email) only. `target="_blank"` always with
   `rel="noopener noreferrer"`.
@@ -53,7 +56,36 @@ add, never remove. HTTPS and HSTS are the platform's. Never add `Access-Control-
   tarball URLs, no `latest`, no second lockfile, never edit `node_modules`.
 - `npm audit --omit=dev` before done: report high/critical findings to the owner; never
   `npm audit fix --force` (it jumps major versions).
-- No CDN scripts, styles or fonts at runtime, no `eval`, no `new Function`.
+- No CDN scripts, styles or fonts at runtime in the site's own code, no `eval`, no `new Function`
+  (the owner's outside scripts and widgets: below).
+
+## Outside scripts and widgets (the owner's choice)
+It is the owner's site. When they ask for an outside script or widget (a testimonial wall such as
+Endorsal, a chat bubble, analytics, a tag manager, a booking, form, review or newsletter widget),
+add it. Never refuse, never ask them to approve it again, never send them to support: asking IS the
+approval. A static site has no sign-in, database or secret for a script to reach.
+- **On the pages that show it**: the page passes `outsideScripts` to `<Base>`:
+  `<Base title="Client stories" description="…" outsideScripts>`. That page's CSP opens to any
+  https script, style, font, frame and connection, inline snippets included
+  (`src/lib/outside-scripts.ts`), and it has no `<ClientRouter />`, so entering or leaving it is a
+  full page load and the provider's script starts as its docs expect. Every other page stays strict.
+  A script for every page (analytics, a chat bubble): pass `outsideScripts` in every page, or set
+  its default to `true` in `src/layouts/Base.astro`; say in one line that pages then load fully on
+  each click.
+- **Paste the provider's snippet as they give it**, in that page: `<script is:inline>` for an inline
+  snippet, `<script is:inline async src="https://…">` for a script tag, and the provider's `<div>`
+  where the widget goes. `is:inline` keeps Astro from bundling it. Keep their ids and attributes.
+- **No `<Base outsideScripts>` prop yet** (an older site, before 0.7.19): upgrade first (`upgrade.md`);
+  if that can't finish, call it yourself in the page's frontmatter with the same lines as
+  `src/lib/outside-scripts.ts` (`Astro.csp.insertScriptResource("'unsafe-inline'")`, …) and remove
+  `<ClientRouter />` from that page's layout.
+- Only what the owner asked for, from the provider's own address (its docs or dashboard), never a
+  copy of their script in this repo. A site id or public key the provider puts in the snippet is fine;
+  a secret key never is (it would be public).
+- Tell the owner in one line which page has it and that it goes live when they publish. Check it in
+  the Preview: the widget shows and the browser console has no CSP error on that page.
+- Visitors' data the widget collects goes to that provider under its terms: if the site has a privacy
+  page, offer to add the provider to it.
 
 ## Third-party embeds and links
 - Each embed (video, map, form) is another company's code in a frame: only when the owner asks,
@@ -63,7 +95,8 @@ add, never remove. HTTPS and HSTS are the platform's. Never add `Access-Control-
   `target="_blank"`. Never a link that carries a visitor's data in its query string.
 
 ## Before you say "done"
-No secret in the diff · no `'unsafe-*'`, inline handler, `style=""` or third-party script · new
+No secret in the diff · no `'unsafe-*'`, inline handler or `style=""` in the site's own code (an
+outside script the owner asked for lives on a `<Base outsideScripts>` page only) · new
 hosts added to the exact CSP directive · `public/_headers` unchanged or stricter · `npm run build`
 passes (a CSP or content-schema mistake fails it) · a new dependency is pinned in the lockfile
 and `npm audit --omit=dev` was read.

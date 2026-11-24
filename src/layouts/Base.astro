@@ -21,6 +21,7 @@ import {ClientRouter} from 'astro:transitions';
 
 import {NAV, SITE} from '../content/site';
 import {type JsonLd, jsonLdText, siteJsonLd} from '../lib/json-ld';
+import {allowOutsideScripts} from '../lib/outside-scripts';
 import {absoluteUrl} from '../lib/site-url';
 
 interface Props {
@@ -40,6 +41,11 @@ interface Props {
   noindex?: boolean;
   /** The page's own structured data (src/lib/json-ld.ts), e.g. `postJsonLd(…)` on a post. */
   jsonLd?: JsonLd;
+  /**
+   * This page runs the owner's outside scripts or widgets (src/lib/outside-scripts.ts): its CSP
+   * opens to them and it has no ClientRouter, so it is always a full page load.
+   */
+  outsideScripts?: boolean;
 }
 
 const {
@@ -52,7 +58,9 @@ const {
   updatedAt,
   noindex = false,
   jsonLd,
+  outsideScripts = false,
 } = Astro.props;
+if (outsideScripts) allowOutsideScripts(Astro.csp);
 const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
 const path = Astro.url.pathname;
 const canonical = noindex ? null : absoluteUrl(path);
@@ -89,7 +97,7 @@ const structured = [...(path === '/' ? [siteJsonLd()] : []), ...(jsonLd && !noin
     <link rel="alternate" type="application/rss+xml" title={`${SITE.name} blog`} href="/rss.xml" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     {structured.map(data => <script type="application/ld+json" set:html={jsonLdText(data)} />)}
-    <ClientRouter />
+    {!outsideScripts && <ClientRouter />}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

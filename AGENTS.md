@@ -6,7 +6,7 @@ The other rule files at the root (`CLAUDE.md`…) only import this file: edit he
 This repo is ONE **static** website: Astro 7, every page prerendered to plain files
 (`output: 'static'`, no adapter). No server code, no backend, no database, no secrets, no client
 JavaScript but Astro's prefetch module (and the small live-prices script of a pricing
-section, `plans-catalogue.md`, and the Buy button's script, `payments.md`). It stands alone: its pages, words and posts all live in this repo. It already has a
+section, `plans-catalogue.md`, the Buy button's script, `payments.md`, and the owner's own outside scripts and widgets, `security.md`). It stands alone: its pages, words and posts all live in this repo. It already has a
 home, about, contact, a Markdown blog (list, posts, tag pages, RSS), a sitemap, robots.txt and
 a 404 page. Extend it; don't rebuild it.
 
@@ -20,8 +20,8 @@ is compared byte for byte). Read `docs/agent/<topic>.md` in this folder instead 
 `{{DOCS_URL}}`; for any other one, `DEVELOPERS.md` or `STORE-LISTING.md`, if present, says what it is on
 that computer; otherwise it isn't available there: do the task without it and say so in one line.
 
-## First: is this site on the required template version? (0.7.17)
-Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.17 (below it, its AI may sell through something other than the built-in payments and build video features the platform's video doesn't allow; below 0.7.16 Wistia embeds are blocked; below 0.7.15 `npm run platform -- check`
+## First: is this site on the required template version? (0.7.19)
+Read `version` in `template.json` at the start of a session, new or resumed, before anything else. **If it's below 0.7.19 (below it, a page with its own styles shows unstyled after a click from another page, and its AI refuses the owner's outside scripts and widgets; below 0.7.17 its AI may sell through something other than the built-in payments and build video features the platform's video doesn't allow; below 0.7.16 Wistia embeds are blocked; below 0.7.15 `npm run platform -- check`
 puts a half-done merge back with the wrong file, and on a developer's computer its AI can open a placeholder as a link; below 0.7.14 it can't tell when the template's own files were changed), upgrade it now, as your first step, without asking.** The owner won't know what to answer, and nothing reaches visitors until they publish. Say one
 plain line, such as "I'm updating your site first. Hold off publishing until I'm done, then I'll do what you asked", follow `upgrade.md`, then do
 their task. A question from the owner that changes nothing can be answered first. Upgrade before anything that changes a file. No
@@ -124,7 +124,7 @@ Ezypay, Stripe or PayPal account needs server code and webhooks, so it needs the
 | — | the site's public address at build time | `src/lib/site-url.ts` |
 | — | blog helpers (posts, tags, dates) | `src/lib/posts.ts` |
 | — | optimised images (covers): AVIF/WebP, widths, lazy | `src/components/Cover.astro`, files in `src/assets/` |
-| — | styles (tokens, light + dark), inlined into every page | `src/styles/global.css` |
+| — | styles (tokens, light + dark), one cached file for every page | `src/styles/global.css` |
 | — | headers for every file | `public/_headers` |
 
 Never create anything under `{{API_PREFIX}}` (the platform serves it on this host) or `/site-api`.
@@ -181,7 +181,8 @@ the owner's own storage (a bucket, S3, R2, a video host's account) or a direct l
 are the platform's own, on the app template. When the owner asks for one of these, say
 plainly that this site is static and that switching to the **Astro app** template (the database
 toggle, "make it an app", in the dashboard) adds a backend, a Site Database and accounts; do not
-fake it in the browser (no localStorage "accounts", no third-party form scripts, no keys in JS).
+fake it in the browser (no localStorage "accounts", no secret keys in JS). A hosted service's own widget (a form,
+chat, booking or testimonial widget that keeps its data on its side) is fine: `security.md` "Outside scripts and widgets".
 A contact form today = a `mailto:` link or `CONTACT.formUrl` (a form the owner hosts elsewhere).
 The platform's video (on the app template) is for teaching, coaching, talks and group or business video:
 never build movie, film, TV-drama or music-video features on it, here or there, and refuse such a
@@ -195,7 +196,7 @@ request in one plain line. A "series" is a learning or coaching show, never a TV
   `innerHTML` pages.
 - **Performance** (`performance.md`): no JavaScript but Astro's prefetch and client router, images through
   `astro:assets` (`Cover`, `<Picture>`/`<Image>` from `src/assets/`) with `sizes` and lazy loading, system
-  fonts, one small inlined stylesheet. Mobile Lighthouse ≥ 95 in all four categories.
+  fonts, one small stylesheet (a cached file, never inlined: `performance.md`). Mobile Lighthouse ≥ 95 in all four categories.
 - **Accessibility** (`accessibility.md`): one `<h1>`, headings in order, landmarks, the skip
   link, keyboard and focus, contrast ≥ 4.5:1 in light AND dark, `prefers-reduced-motion`.
 - **SEO** (`seo.md`): a unique `title` + `description` per page through `<Base>`; canonical,
@@ -203,8 +204,8 @@ request in one plain line. A "series" is a learning or coaching show, never a TV
   the platform sets at Publish); real text in the HTML; `noindex` on the 404; JSON-LD through
   `src/lib/json-ld.ts` (`<Base jsonLd>`).
 - **Security** (`security.md`): no secrets (there are none to have), the CSP in
-  `astro.config.mjs` stays strict (no `'unsafe-inline'`, no inline handlers, no third-party
-  scripts), `public/_headers` stays, no `innerHTML`/`set:html` with outside data. There is no
+  `astro.config.mjs` stays strict on every page (no `'unsafe-inline'`, no inline handlers),
+  except a page with the owner's outside scripts or widgets (`<Base outsideScripts>`, `security.md`), `public/_headers` stays, no `innerHTML`/`set:html` with outside data. There is no
   input to validate and no session to protect: anything that needs input validation, CSRF
   protection or rate limits (forms that store, sign-in) is the app template's job.
 
@@ -242,11 +243,11 @@ request in one plain line. A "series" is a learning or coaching show, never a TV
   form's hidden field, a link, a script or a file. An email is treasure: show a name instead.
 - An adapter, `prerender = false`, middleware, or an endpoint that runs per request.
 - A secret, key or token anywhere (code, Markdown, `.env`, `PUBLIC_*`, HTML).
-- Client-side "features" that fake a backend: localStorage accounts, third-party form or chat
-  scripts, keys in JavaScript. Propose the app template instead.
-- `'unsafe-inline'`, inline handlers, `style=""`, third-party `<script src>`, `set:html` with
-  outside content.
-- Removing `<ClientRouter />`, another client-side router, or your own JavaScript that swaps
+- Client-side "features" that fake a backend: localStorage accounts, secret keys in JavaScript.
+  Propose the app template instead. (A hosted service's widget is not that: `security.md`.)
+- `'unsafe-inline'`, inline handlers, `style=""`, `set:html` with outside content, in the site's own
+  code; an outside script or widget the owner asks for goes on its page with `<Base outsideScripts>`.
+- Removing `<ClientRouter />` (but a page with `<Base outsideScripts>` has none, by design), another client-side router, or your own JavaScript that swaps
   pages (the ClientRouter already does it, with focus, titles and history right).
 - A runtime fetch for content (the exceptions: the owner's live plans and prices, exactly as
   `plans-catalogue.md` says, and the Buy button's checkout call, `payments.md`), a UI kit or framework for one widget, a web font from another

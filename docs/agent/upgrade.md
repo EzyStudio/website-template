@@ -43,8 +43,19 @@ Start with a clean git tree: commit what's there. Never stash: Publish ships the
    **Coming from below 0.7.18** (rules only, optional: the Preview and git in the editor). `docs/agent/preview.md` arrives with the
    upgrade. `AGENTS.md`: copy the template's (`cp /tmp/site-template/AGENTS.md AGENTS.md`) and add this site's own rules back at its
    end, if it had any. Nothing in the site's pages changes.
-8. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
-9. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
+8. **Coming from below 0.7.19** (pages unstyled after a click). The upgrade leaves `astro.config.mjs`: in its `build` block, set
+   `inlineStylesheets: 'never'` (replace `'always'` or `'auto'`; add the line if there is none). Then `npm run build` and check:
+   `grep -l '<style' dist -r --include=index.html` lists no page. In the Preview, open the home page, click to a page with its own
+   look, and check it is styled.
+   Outside scripts and widgets (also 0.7.19): the upgrade adds `src/lib/outside-scripts.ts`; keep it. It leaves
+   `src/layouts/Base.astro`: copy the template's (`cp /tmp/site-template/src/layouts/Base.astro src/layouts/Base.astro`)
+   if this site never changed it (`git diff` against the old release is empty or only the template's). A site that changed
+   it: bring over the four `outsideScripts` parts by hand: the `allowOutsideScripts` import, the `outsideScripts?: boolean`
+   prop, `outsideScripts = false` with `if (outsideScripts) allowOutsideScripts(Astro.csp);` after the props, and
+   `{!outsideScripts && <ClientRouter />}` in place of `<ClientRouter />`. A page that already loads an outside script some
+   other way (its own CSP lines): move it to `<Base outsideScripts>`.
+9. Check it: `npm install`, then `npm run build`, then look at the pages this site changed in the Preview.
+10. Commit, do the owner's task, and at the end tell them in plain words what changed for this site, and that it goes live when they publish.
 
 ## If it can't finish
 Stop before committing, restore with `git checkout .` and `git clean -fd` on what the upgrade added, do the owner's task, and tell them it didn't finish. The site keeps

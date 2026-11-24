@@ -36,8 +36,10 @@ because of two things already on; keep both, add nothing in their place:
   page's own element is missing (that event fires on every page). A
   `<script>` in a page is bundled as a deferred module: add one only for real interactivity,
   keep it small and page-specific.
-- No `is:inline` scripts, no scripts of your own in `<head>`, no analytics / chat / tag-manager snippets
-  unless the owner insists (they also break the CSP: `security.md`).
+- No `is:inline` scripts of your own, no scripts of your own in `<head>`. An analytics, chat,
+  tag-manager or widget snippet the owner asks for: add it on its pages with `<Base outsideScripts>`
+  (`security.md` "Outside scripts and widgets"), `async` where the provider allows it, and only on
+  the pages that need it.
 - No framework islands unless a widget truly needs one; then `client:visible`, never
   `client:load` on content pages. Don't add React/Vue/Svelte for one interaction: a `<details>`,
   a CSS `:target` or a few lines of a module script usually do.
@@ -67,10 +69,13 @@ because of two things already on; keep both, add nothing in their place:
   No Google Fonts link (an extra origin, and the CSP allows `font-src 'self'` only).
 
 ## CSS
-- One stylesheet (`src/styles/global.css`), tokens on `:root`, a dark block beside it. It is
-  inlined into every page (`build.inlineStylesheets: 'always'`): no render-blocking request.
-  That only stays cheap while it is small (≤ ~15 KB): delete rules nothing uses, don't paste
-  in a library. Page-only styles go in a `<style>` in that page (Astro scopes and hashes it).
+- One stylesheet (`src/styles/global.css`), tokens on `:root`, a dark block beside it. It ships
+  as a file (`build.inlineStylesheets: 'never'`), fetched once and cached for every next page.
+  Keep it small (≤ ~15 KB): delete rules nothing uses, don't paste in a library. Page-only
+  styles go in a `<style>` in that page (Astro scopes them and bundles them into a file).
+- **Never inline stylesheets** (`'always'` or `'auto'`): each page's CSP lists only its own
+  inline styles, and the ClientRouter keeps the first page's CSP, so after a click another
+  page's inline CSS is blocked and that page shows unstyled until a reload.
 - No CSS framework on top unless the owner asks; if Tailwind is asked for, use the Astro
   integration (build-time), never the CDN script.
 - Animate `transform` and `opacity` only; respect `prefers-reduced-motion`.

@@ -9,7 +9,7 @@ No server, no database, nothing to maintain.
 - search-ready: a title, description, canonical URL and social card on every page,
   `/sitemap.xml` and `/robots.txt` built with the site;
 - instant page-to-page navigation (Astro's ClientRouter + prefetch, the only JavaScript, over
-  real prerendered pages), system fonts, one inlined stylesheet, images optimised at build
+  real prerendered pages), system fonts, one small cached stylesheet, images optimised at build
   (AVIF/WebP, several sizes, lazy), a strict Content-Security-Policy and security headers;
 - it stands alone: every page, word and post lives in this repo and is built into plain HTML.
 
@@ -94,7 +94,7 @@ src/layouts/Base.astro <head> (SEO tags), header, footer
 src/components/        PostCard, Cover (optimised images)
 src/lib/posts.ts       blog helpers (build time)
 src/lib/site-url.ts    the site's public address (canonical URLs, sitemap, RSS)
-src/styles/global.css  the stylesheet (inlined into every page)
+src/styles/global.css  the stylesheet (one cached file for every page)
 ```
 
 ## Building on it

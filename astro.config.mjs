@@ -27,9 +27,12 @@ export default defineConfig({
   trailingSlash: 'ignore',
   build: {
     format: 'directory',
-    // The stylesheet is small: inline it in every page so nothing blocks the
-    // first paint (no extra request; the CSP hashes it).
-    inlineStylesheets: 'always',
+    // CSS ships as files (`/_astro/*.css`, allowed by `style-src 'self'`), NEVER
+    // inlined: each page's CSP lists only its own inline styles' hashes, and the
+    // ClientRouter keeps the first page's CSP, so another page's inline <style>
+    // is blocked after a click and that page shows unstyled. The file is
+    // cached, so the next pages cost no extra request. Keep `'never'`.
+    inlineStylesheets: 'never',
   },
   env: {
     schema: {
